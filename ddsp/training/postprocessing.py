@@ -284,10 +284,10 @@ def compute_dataset_statistics(data_provider,
 
   for batch in iter(ds):
     loudness.append(batch['loudness_db'])
-    power.append(
-        spectral_ops.compute_power(batch[audio_key],
-                                   frame_size=power_frame_size,
-                                   frame_rate=power_frame_rate))
+    # power.append(
+    #     spectral_ops.compute_power(batch[audio_key],
+    #                                frame_size=power_frame_size,
+    #                                frame_rate=power_frame_rate))
     f0.append(batch['f0_hz'])
     f0_conf.append(batch['f0_confidence'])
     audio.append(batch[audio_key])
@@ -296,7 +296,7 @@ def compute_dataset_statistics(data_provider,
   print(f'Computing statistics for {i * batch_size} examples.')
 
   loudness = np.vstack(loudness)
-  power = np.vstack(power)
+  # power = np.vstack(power)
   f0 = np.vstack(f0)
   f0_conf = np.vstack(f0_conf)
   audio = np.vstack(audio)
@@ -305,7 +305,7 @@ def compute_dataset_statistics(data_provider,
   trim_end = 20
   f0_trimmed = f0[:, :-trim_end]
   pitch_trimmed = hz_to_midi(f0_trimmed)
-  power_trimmed = power[:, :-trim_end]
+  # power_trimmed = power[:, :-trim_end]
   loudness_trimmed = loudness[:, :-trim_end]
   f0_conf_trimmed = f0_conf[:, :-trim_end]
 
