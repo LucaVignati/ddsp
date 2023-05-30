@@ -24,14 +24,14 @@ class Predictor(Model):
   def __init__(self,
                preprocessor=None,
                predictor=None,
-               processor_group=None,
-               losses=None,
+               f0_losses=None,
+               ld_losses=None,
                **kwargs):
     super().__init__(**kwargs)
     self.preprocessor = preprocessor
     self.predictor = predictor
-    self.processor_group = processor_group
-    self.loss_objs = ddsp.core.make_iterable(losses)
+    self.f0_losses = ddsp.core.make_iterable(f0_losses)
+    self.ld_losses = ddsp.core.make_iterable(ld_losses)
 
   def preprocess(self, features, training=True):
     """Get conditioning by preprocessing."""
@@ -42,31 +42,26 @@ class Predictor(Model):
   def predict(self, features, training=True):
     """Get generated audio by decoding than processing."""
     features.update(self.decoder(features, training=training))
-    return self.processor_group(features)
-
-  def get_audio_from_outputs(self, outputs):
-    """Extract audio output tensor from outputs dict of call()."""
-    return outputs['audio_synth']
 
   def call(self, features, training=True):
     """Run the core of the network, get predictions and loss."""
-    features = self.preprocess(features, training=training)
-    features.update(self.predictor(features, training=training))
+    features.update(self.preprocessor(features, training=training))
+    output_features = (self.predictor(features, training=training))
 
-    # Run through processor group.
-    pg_out = self.processor_group(features, return_outputs_dict=True)
+    # Make output differential
+    # for k, v in output_features.items():
+    #   v += features[k]
 
-    # Parse outputs
-    outputs = pg_out['f0_and_loudness']
-    outputs['audio_synth'] = pg_out['signal']
+    # if training:
+    self._update_losses_dict(
+          self.f0_losses, features['f0_scaled'][:, 1:], output_features['f0_scaled'][:, :-1])
+    self._update_losses_dict(
+          self.ld_losses, features['ld_scaled'][:, 1:], output_features['ld_scaled'][:, :-1])
+            
 
-    if training:
-      if 'audio' in features.keys():
-        self._update_losses_dict(
-            self.loss_objs, features['audio'], outputs['audio_synth'])
-      
-      self._update_losses_dict(
-            self.loss_objs, features['f0_and_loudness'], outputs['f0_and_loudness'])
-
-    return outputs
+    return output_features
+  
+  def get_audio_from_outputs(self, outputs):
+    """Extract audio output tensor from outputs dict of call()."""
+    return None
 

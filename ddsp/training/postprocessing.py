@@ -349,10 +349,10 @@ def compute_dataset_statistics(data_provider,
 
   ds_stats = {}
   ds_stats.update(get_stats(pitch_trimmed, 'pitch'))
-  ds_stats.update(get_stats(power_trimmed, 'power'))
+  # ds_stats.update(get_stats(power_trimmed, 'power'))
   ds_stats.update(get_stats(loudness_trimmed, 'loudness'))
   ds_stats.update(get_stats(pitch_trimmed, 'pitch_note', mask_on))
-  ds_stats.update(get_stats(power_trimmed, 'power_note', mask_on))
+  # ds_stats.update(get_stats(power_trimmed, 'power_note', mask_on))
   ds_stats.update(get_stats(loudness_trimmed, 'loudness_note', mask_on))
 
   ds_stats['quantile_transform'] = quantile_transform

@@ -116,6 +116,8 @@ flags.DEFINE_integer('initial_delay_secs', None,
 
 GIN_PATH = pkg_resources.resource_filename(__name__, 'gin')
 
+def get_gin_path():
+  return pkg_resources.resource_filename(__name__, 'gin')
 
 def delay_start():
   """Optionally delay the start of the run."""

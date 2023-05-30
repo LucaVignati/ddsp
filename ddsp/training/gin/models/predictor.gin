@@ -1,0 +1,41 @@
+# -*-Python-*-
+# Autoencoder that decodes from (loudness, f0, z).
+# z = encoder(audio)
+
+import ddsp
+import ddsp.training
+
+# =====
+# Model
+# =====
+get_model.model = @models.Predictor()
+
+# Preprocessor
+Predictor.preprocessor = @preprocessing.F0LoudnessPreprocessor()
+F0LoudnessPreprocessor.time_steps = 2500
+
+# Decoder
+Predictor.predictor = @decoders.RnnFcDecoder()
+RnnFcDecoder:
+    rnn_channels = 512
+    rnn_type = 'gru'
+    ch = 256
+    layers_per_stack = 1
+    input_keys = ('ld_scaled', 'f0_scaled')
+    output_splits = (('ld_scaled', 1),
+                     ('f0_scaled', 1))
+
+# Losses
+Predictor.f0_losses = [
+    @f0_loss/losses.ParamLoss(),
+]
+f0_loss/ParamLoss.loss_type = 'L2'
+f0_loss/ParamLoss.name = 'f0_loss'
+f0_loss/ParamLoss.weight = 4.0
+
+Predictor.ld_losses = [
+    @ld_loss/losses.ParamLoss(),
+]
+ld_loss/ParamLoss.loss_type = 'L2'
+ld_loss/ParamLoss.name = 'ld_loss'
+ld_loss/ParamLoss.weight = 1.0
